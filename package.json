@@ -1,6 +1,6 @@
 {
   "name": "mono-state",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "State Management Lib - reactive and less boilerplate ",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -63,7 +63,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JUkhan/react-mono-state.git"
+    "url": "git+https://github.com/JUkhan/mono-state.git"
   },
   "keywords": [
     "redux",
@@ -73,7 +73,7 @@
   "author": "Jasim Khan<jasim.uddin.khan@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JUkhan/react-mono-state/issues"
+    "url": "https://github.com/JUkhan/mono-state/issues"
   },
-  "homepage": "https://github.com/JUkhan/react-mono-state#readme"
+  "homepage": "https://github.com/JUkhan/mono-state#readme"
 }
