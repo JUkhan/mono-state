@@ -32,7 +32,7 @@ function delay(ms: number) {
 }
 
 const store = createStore([counterState]);
-store.select((state) => state).subscriibe(console.log);
-stre.dispatch("inc");
-stre.dispatch("asyncInc");
+store.select((state) => state).subscribe(console.log);
+store.dispatch("inc");
+store.dispatch("asyncInc");
 ```
