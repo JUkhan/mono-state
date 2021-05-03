@@ -17,9 +17,9 @@ export interface RegisterState<M = any, S = any> {
 }
 
 export class MonoStore<S = any> {
-  public _store: BehaviorSubject<any>;
+  private _store: BehaviorSubject<any>;
   private _stateSubscriptions: Map<String, Subscription>;
-  public _dispatcher = new BehaviorSubject<Action>({ type: "@INIT" });
+  private _dispatcher = new BehaviorSubject<Action>({ type: "@INIT" });
   constructor(states: RegisterState[]) {
     this._store = new BehaviorSubject<any>({});
     this._stateSubscriptions = new Map<String, Subscription>();
@@ -28,6 +28,14 @@ export class MonoStore<S = any> {
     });
   }
   public action$ = new Actions(this._dispatcher);
+
+  get store() {
+    return this._store.asObservable();
+  }
+
+  get dispatcher() {
+    return this._dispatcher.asObservable();
+  }
 
   registerState<M>({
     stateName,
@@ -91,7 +99,7 @@ export class MonoStore<S = any> {
   getState(): S {
     return this._store.value;
   }
-  select<T = any>(mapFn: (state: S) => any): Observable<T> {
+  select<T = any>(mapFn: (state: S) => T): Observable<T> {
     let mapped$;
     if (typeof mapFn === "function") {
       mapped$ = this._store.pipe(map((source: any) => mapFn(source)));
