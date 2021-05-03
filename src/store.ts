@@ -29,11 +29,7 @@ export class MonoStore<S = any> {
   }
   public action$ = new Actions(this._dispatcher);
 
-  get store() {
-    return this._store.asObservable();
-  }
-
-  get dispatcher() {
+  get dispatcher$() {
     return this._dispatcher.asObservable();
   }
 
