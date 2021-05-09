@@ -20,7 +20,7 @@ export class MonoStore<S = any> {
   private _store: BehaviorSubject<any>;
   private _stateSubscriptions: Map<String, Subscription>;
   private _dispatcher = new BehaviorSubject<Action>({ type: "@INIT" });
-  constructor(states: RegisterState[]) {
+  constructor(states: RegisterState[] = []) {
     this._store = new BehaviorSubject<any>({});
     this._stateSubscriptions = new Map<String, Subscription>();
     states.forEach((s) => {
@@ -107,14 +107,22 @@ export class MonoStore<S = any> {
     }
     return mapped$.pipe(distinctUntilChanged());
   }
-  clear(): void {
+  importState(stateName: string, state: any) {
+    let s_state = this._store.value;
+    if (s_state[stateName]) {
+      s_state = Object.assign({}, s_state);
+      s_state[stateName] = state;
+      this._store.next(s_state);
+      this.dispatch(`@importState(${stateName})`);
+    }
+  }
+  dispose(): void {
     this._stateSubscriptions.forEach((value, key) => {
       value.unsubscribe();
     });
     this._stateSubscriptions.clear();
-    this._store.next({});
   }
 }
-export function createStore(states: RegisterState[]) {
+export function createStore(states: RegisterState[] = []) {
   return new MonoStore(states);
 }

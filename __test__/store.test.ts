@@ -1,49 +1,3 @@
-# mono-state
-
-State Management Lib - reactive and less boilerpllate
-
-`Angular` [counter](https://stackblitz.com/edit/angular-ms-todo?file=src/app/app.component.ts) | [todos](https://stackblitz.com/edit/angular-ms-todo?file=src/app/app.component.ts)
-
-`React` [counter](https://stackblitz.com/edit/react-mono-state?file=index.tsx) | [todos](https://stackblitz.com/edit/react-todo-mono?file=index.tsx)
-
-### counterState
-
-```tsx
-import { RegisterState, createStore } from "mono-state";
-
-export const counterState: RegisterState<Counter> = {
-  stateName: "counter",
-  initialState: { loading: false, count: 0 },
-  mapActionToState(emit) {
-    return {
-      inc(state) {
-        emit({ loading: false, count: state.count + 1 });
-      },
-      dec(state) {
-        emit({ loading: false, count: state.count - 1 });
-      },
-      async asyncInc(state) {
-        emit({ loading: true, count: state.count });
-        await delay(1000);
-        emit((c_state) => ({ loading: false, count: c_state.count + 1 }));
-      },
-    };
-  },
-};
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-const store = createStore([counterState]);
-store.select((state) => state).subscribe(console.log);
-store.dispatch("inc");
-store.dispatch("asyncInc");
-```
-
-### Testing
-
-```ts
 import { ajwahTest } from "ajwah-test";
 import { MonoStore, createStore } from "../src";
 import { Counter, counterState } from "./counterState";
@@ -183,4 +137,3 @@ describe("mono-state: ", () => {
     });
   });
 });
-```
