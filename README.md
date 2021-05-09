@@ -48,7 +48,7 @@ import { ajwahTest } from "ajwah-test";
 import { MonoStore, createStore } from "../src";
 import { Counter, counterState } from "./counterState";
 
-describe("mono-state: ", () => {
+describe("Counter State: ", () => {
   let store: MonoStore<{ counter: Counter }>;
   beforeEach(() => {
     store = createStore([counterState]);
