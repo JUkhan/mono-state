@@ -45,7 +45,7 @@ store.dispatch("asyncInc");
 
 ```ts
 import { ajwahTest } from "ajwah-test";
-import { MonoStore, createStore } from "../src";
+import { MonoStore, createStore } from "mono-state";
 import { Counter, counterState } from "./counterState";
 
 describe("Counter State: ", () => {
@@ -188,7 +188,7 @@ describe("Counter State: ", () => {
 ### Counter State Controller
 
 ```ts
-import { StateController } from "ajwah-store";
+import { StateController } from "mono-state";
 
 interface CounterState {
   count: number;
