@@ -1,13 +1,14 @@
 import { ajwahTest } from "ajwah-test";
 import { CounterController } from "./counterController";
+import { PutOrGet, RemoveState } from "../src/provider";
 
 describe("Controller: ", () => {
   let controller: CounterController;
   beforeEach(() => {
-    controller = new CounterController();
+    controller = PutOrGet(CounterController);
   });
   afterEach(() => {
-    controller.dispose();
+    RemoveState(CounterController);
   });
 
   it("initial state", async () => {

@@ -16,14 +16,14 @@ export abstract class StateController<S> {
     this._store = new BehaviorSubject<S>(initialState);
 
     this._sub = _dispatcher.subscribe((action) => {
-      this.onAction(this.state, action);
+      this.onAction(action);
     });
 
     setTimeout(() => {
       this.onInit();
     }, 0);
   }
-  onAction(state: S, action: Action) {}
+  onAction(action: Action) {}
   onInit() {}
 
   select<T = any>(mapFn: (state: S) => any): Observable<T> {
