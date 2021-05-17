@@ -1,34 +1,33 @@
 import { StateController } from "./stateController";
 
-const _container: { [key: string]: any } = {};
+const _container: Map<number, any> = new Map();
 const get_id = (() => {
   let _id = 1;
   return () => _id++;
 })();
-export function PutOrGet<T extends StateController<any>>(
+export function Get<T extends StateController<any>>(
   controllerType: new () => T
 ): T {
   const fn = controllerType as any;
-  if (!fn.key) {
-    const obj: any = new controllerType();
-    fn.key = get_id();
-    _container[fn.key] = obj;
-    return obj;
+  if (!fn._$key) {
+    fn._$key = `${new Date().getTime()}${get_id()}`;
   }
 
-  if (!_container[fn.key]) {
-    _container[fn.key] = new controllerType();
+  if (!_container.has(fn._$key)) {
+    _container.set(fn._$key, new controllerType());
   }
-  return _container[fn.key];
+  return _container.get(fn._$key);
 }
 
-export function RemoveState<T extends StateController<any>>(
+export function RemoveController<T extends StateController<any>>(
   controllerType: new () => T
 ): boolean {
   const fn = controllerType as any;
-  if (_container[fn.key]) {
-    if (_container[fn.key].dispose) _container[fn.key].dispose();
-    delete _container[fn.key];
+
+  if (_container.has(fn._$key)) {
+    if (_container.get(fn._$key).dispose) _container.get(fn._$key).dispose();
+    _container.delete(fn._$key);
+    fn._$key = undefined;
     return true;
   }
   return false;
