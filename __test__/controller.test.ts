@@ -1,8 +1,14 @@
 import { ajwahTest } from "ajwah-test";
-import { CounterController } from "./counterController";
+import {
+  CounterController,
+  RemoteController,
+  CounterController2,
+} from "./counterController";
 import { Get, RemoveController } from "../src/provider";
+import { mergeMap } from "rxjs/operators";
 
 describe("Controller: ", () => {
+  new RemoteController();
   let controller: CounterController;
   beforeEach(() => {
     controller = Get(CounterController);
@@ -131,6 +137,95 @@ describe("Controller: ", () => {
       verify: (states) => {
         expect(states.length).toBe(1);
         expect(states[0]).toEqual({ count: 0, loading: false });
+      },
+    });
+  });
+  it("remote state", async () => {
+    const state = await controller.remoteState<string>(RemoteController);
+    expect(state).toBe("remote-controller");
+  });
+  it("remote controller", async () => {
+    await ajwahTest({
+      build: () =>
+        controller
+          .remoteController(RemoteController)
+          .pipe(mergeMap((con) => con.stream$)),
+      verify: (states) => {
+        expect(states[0]).toBe("remote-controller");
+      },
+    });
+  });
+});
+
+describe("Counter controller2: ", () => {
+  let controller: CounterController2;
+  beforeEach(() => {
+    controller = Get(CounterController2);
+  });
+  afterEach(() => {
+    RemoveController(CounterController2);
+  });
+
+  it("initial state", async () => {
+    await ajwahTest({
+      build: () => controller.stream$,
+      verify: (states) => {
+        expect(states[0]).toEqual(0);
+      },
+    });
+  });
+  it("increment", async () => {
+    await ajwahTest({
+      build: () => controller.stream$,
+      act: () => {
+        controller.inc();
+      },
+      skip: 1,
+      verify: (states) => {
+        expect(states[0]).toEqual(1);
+      },
+    });
+  });
+
+  it("decrement", async () => {
+    await ajwahTest({
+      build: () => controller.stream$,
+      act: () => {
+        controller.dec();
+      },
+      skip: 1,
+      verify: (states) => {
+        expect(states[0]).toEqual(-1);
+      },
+    });
+  });
+
+  it("async increment", async () => {
+    await ajwahTest({
+      build: () => controller.stream$,
+      act: () => {
+        controller.asyncInc();
+      },
+      skip: 1,
+      wait: 10,
+      verify: (states) => {
+        expect(states[0]).toEqual(1);
+      },
+    });
+  });
+
+  it("async increment", async () => {
+    await ajwahTest({
+      build: () => controller.count$,
+      act: () => {
+        controller.asyncInc();
+      },
+
+      skip: 2,
+      wait: 10,
+      verify: (states) => {
+        expect(states[0]).toEqual("loading...");
+        expect(states[1]).toEqual("1");
       },
     });
   });

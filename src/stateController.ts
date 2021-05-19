@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Subscription, merge } from "rxjs";
+import { BehaviorSubject, Observable, Subscription, merge, from } from "rxjs";
 import { map, distinctUntilChanged } from "rxjs/operators";
 
 import { Action } from "./action";
@@ -9,10 +9,10 @@ const _action$ = new Actions(_dispatcher);
 
 /**[StateController] is a base class
  *
- *To develop a powerful concrete state controller class.
+ *Used to define a powerful concrete state controller class.
  *
- *So that you can manage your application's state easy and comportable way.
- *Spliting chunk of them as the controllers and having communication among them.
+ *That will manage your application's state easy and comportable way.
+ *Spliting chunk of them as the controllers having communication among them.
  *
  *```ts
  *class CounterState extends StateController<number>{
@@ -49,9 +49,19 @@ export abstract class StateController<S> {
     }, 0);
   }
   /**
-   * This function is fired whenever action dispatched from the controllers.
+   * This function is fired whenever action dispatches from any of the controllers.
+   * Note: if you override this method and have call to `remoteState/remoreController` on this instance, don't forget to cal `super.onAction(actio`
    */
-  onAction(action: Action) {}
+  onAction(action: Action) {
+    if (action instanceof RemoteStateAction && this instanceof action.payload) {
+      action.type(this.state);
+    } else if (
+      action instanceof RemoteControllerAction &&
+      this instanceof action.payload
+    ) {
+      action.type(this);
+    }
+  }
 
   /**
    * This function is fired after instantiating the controller.
@@ -82,7 +92,7 @@ export abstract class StateController<S> {
   }
 
   /**
-   * Return a [Acctions] instance.
+   * Return the `Acction` instance.
    *
    *So that you can filter the actions those are dispatches throughout
    *the application. And also making effect/s on it.
@@ -101,7 +111,7 @@ export abstract class StateController<S> {
   /**Dispatching an action is just like firing an event.
    *
    *Whenever the acction is dispatched it notifies all the controllers
-   *those who override the [onAction(action Action)] method and also
+   *those who override the `onAction(action Action)` method and also
    *notifes all the effects - registered throughout the controllers.
    *
    * A powerful way to communicate among the controllers.
@@ -130,10 +140,10 @@ export abstract class StateController<S> {
     this._store.next(state);
   }
   /**
-   * [streams] pass one or more effects.
-   *
    *This function registers the effect/s and also
    *un-registers previous effeccts (if found any).
+   *
+   * `streams` pass one or more effects.
    *
    * Here is an example of a search effect:
    *
@@ -159,6 +169,34 @@ export abstract class StateController<S> {
     );
   }
 
+  /**
+   *Using this function you can get state of any active controlller.
+   * @param controllerType should be a sub type of StateController class.
+   * @returns A promise of the state of the given type.
+   */
+  remoteState<S, T extends StateController<any> = any>(
+    controllerType: new () => T
+  ): Promise<S> {
+    return new Promise<S>((resolver) => {
+      this.dispatch(new RemoteStateAction(resolver, controllerType));
+    });
+  }
+
+  /**
+   *Using this function you can get reference of any active controlller.
+   * @param controllerType should be a sub type of StateController class.
+   * @returns A Observable&lt;controllerTypeInstance> of the given type.
+   */
+  remoteController<S extends StateController<any>>(
+    controllerType: new () => S
+  ): Observable<S> {
+    return from(
+      new Promise<S>((resolver) => {
+        this.dispatch(new RemoteControllerAction(resolver, controllerType));
+      })
+    );
+  }
+
   /**This is a clean up funcction. */
   dispose(): void {
     this._sub.unsubscribe();
@@ -167,4 +205,10 @@ export abstract class StateController<S> {
 }
 function isPlainObj(o: any) {
   return o ? typeof o == "object" && o.constructor == Object : false;
+}
+class RemoteStateAction implements Action {
+  constructor(public type: (state: any) => void, public payload: any) {}
+}
+class RemoteControllerAction implements Action {
+  constructor(public type: (state: any) => void, public payload: any) {}
 }
