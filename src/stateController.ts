@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable, Subscription, merge, from } from "rxjs";
-import { map, distinctUntilChanged } from "rxjs/operators";
+import { map, distinctUntilChanged, mergeMap } from "rxjs/operators";
 
 import { Action } from "./action";
 import { Actions } from "./actions";
@@ -7,13 +7,17 @@ import { Actions } from "./actions";
 const _dispatcher = new BehaviorSubject<Action>({ type: "@INIT" });
 const _action$ = new Actions(_dispatcher);
 
-/**[StateController] is a base class
+/**
+ *Every `StateController` has the following features:
+ *- Dispatching actions
+ *- Filtering actions
+ *- Adding effeccts
+ *- Communications among controllers
+ *- RxDart full features
  *
- *Used to define a powerful concrete state controller class.
+ *Every `StateController` requires an initial state which will be the state of the `StateController` before `emit` has been called.
  *
- *That will manage your application's state easy and comportable way.
- *Spliting chunk of them as the controllers having communication among them.
- *
+ *The current state of a `StateController` can be accessed via the `state` getter.
  *```ts
  *class CounterState extends StateController<number>{
  *
@@ -53,9 +57,7 @@ export abstract class StateController<S> {
    * Note: if you override this method and have call to `remoteState/remoreController` on this instance, don't forget to cal `super.onAction(actio`
    */
   onAction(action: Action) {
-    if (action instanceof RemoteStateAction && this instanceof action.payload) {
-      action.type(this.state);
-    } else if (
+    if (
       action instanceof RemoteControllerAction &&
       this instanceof action.payload
     ) {
@@ -169,31 +171,66 @@ export abstract class StateController<S> {
     );
   }
 
+  private remoteData<S extends StateController<any>>(
+    controllerType: new () => S
+  ): Promise<S> {
+    return new Promise<S>((resolver) => {
+      this.dispatch(new RemoteControllerAction(resolver, controllerType));
+    });
+  }
+
   /**
    *Using this function you can get state of any active controlller.
    * @param controllerType should be a sub type of StateController class.
    * @returns A promise of the state of the given type.
+   *
+   *```ts
+   *const category = await remoteState<SearchCategory>(SearchCategoryController);
+   *```
+   *
    */
   remoteState<S, T extends StateController<any> = any>(
     controllerType: new () => T
   ): Promise<S> {
-    return new Promise<S>((resolver) => {
-      this.dispatch(new RemoteStateAction(resolver, controllerType));
-    });
+    return this.remoteData<T>(controllerType).then((ctrl) => ctrl.state);
   }
 
   /**
    *Using this function you can get reference of any active controlller.
    * @param controllerType should be a sub type of StateController class.
-   * @returns A Observable&lt;controllerTypeInstance> of the given type.
+   * @returns A Observable&lt;Controller> of the given type.
+   *`Example`
+   *
+   *This example returns todo list filtered by searchCategory.
+   *We need `SearchCategoryController` stream combining with `TodoContrroller's` stream:
+   *```ts
+   * const ctrlStream$ =remoteController<SearchCategoryController>();
+   *```
    */
   remoteController<S extends StateController<any>>(
     controllerType: new () => S
   ): Observable<S> {
-    return from(
-      new Promise<S>((resolver) => {
-        this.dispatch(new RemoteControllerAction(resolver, controllerType));
-      })
+    return from(this.remoteData<S>(controllerType));
+  }
+
+  /**
+   *Using this function you can get `stream$` of any active controlller.
+   *
+   * @param controllerType should be a sub type of StateController class.
+   * @returns A Observable&lt;S> of the given type.
+   *
+   *`Example`
+   *
+   *
+   *```ts
+   * const searchCategoryStream$ = remoteStream<SearchCategory>(SearchCategoryController);
+   *```
+   */
+  remoteStream<S, T extends StateController<any> = any>(
+    controllerType: new () => T
+  ): Observable<S> {
+    return this.remoteController<T>(controllerType).pipe(
+      mergeMap((ctrl) => ctrl.stream$)
     );
   }
 
@@ -205,9 +242,6 @@ export abstract class StateController<S> {
 }
 function isPlainObj(o: any) {
   return o ? typeof o == "object" && o.constructor == Object : false;
-}
-class RemoteStateAction implements Action {
-  constructor(public type: (state: any) => void, public payload: any) {}
 }
 class RemoteControllerAction implements Action {
   constructor(public type: (state: any) => void, public payload: any) {}

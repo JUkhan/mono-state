@@ -155,6 +155,15 @@ describe("Controller: ", () => {
       },
     });
   });
+
+  it("remote stream", async () => {
+    await ajwahTest({
+      build: () => controller.remoteStream<string>(RemoteController),
+      verify: (states) => {
+        expect(states[0]).toBe("remote-controller");
+      },
+    });
+  });
 });
 
 describe("Counter controller2: ", () => {
