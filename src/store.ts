@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Subscription } from "rxjs";
+import { BehaviorSubject, Observable, Subscription, merge } from "rxjs";
 import { distinctUntilChanged, map } from "rxjs/operators";
 
 import { Action } from "./action";
@@ -8,12 +8,11 @@ export interface RegisterState<M = any, S = any> {
   stateName: string;
   initialState: M;
   mapActionToState: (
+    action$: Actions,
     emit: (state: M | ((state: M) => M)) => M,
     select: () => S,
-    dispatch: (actionName: string | symbol | Action, payload?: any) => void
-  ) => {
-    [key: string]: (state: M, action: Action) => void;
-  };
+    dispatch: (action: string | symbol | Action) => void
+  ) => Observable<any>[];
 }
 
 export class MonoStore<S = any> {
@@ -58,18 +57,15 @@ export class MonoStore<S = any> {
       }
       return state;
     };
-    const reducer = mapActionToState(
+    const reducerActions = mapActionToState(
+      this.action$,
       emitState,
       () => this._store.value,
       this.dispatch
     );
     this._stateSubscriptions.set(
       stateName,
-      this._dispatcher.subscribe((action) => {
-        if (typeof reducer[action.type] === "function") {
-          reducer[action.type](this._store.value[stateName], action);
-        }
-      })
+      merge(...reducerActions).subscribe()
     );
   }
   unregisterState(stateName: string) {
@@ -85,12 +81,8 @@ export class MonoStore<S = any> {
     }
   }
 
-  dispatch = (actionName: string | symbol | Action, payload?: any) => {
-    if (typeof actionName === "object") {
-      this._dispatcher.next(actionName);
-      return;
-    }
-    this._dispatcher.next({ type: actionName, payload });
+  dispatch = (action: string | symbol | Action) => {
+    this._dispatcher.next(action);
   };
   getState(): S {
     return this._store.value;

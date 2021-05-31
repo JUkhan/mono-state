@@ -1,6 +1,12 @@
 import { ajwahTest } from "ajwah-test";
 import { MonoStore, createStore } from "../src";
-import { Counter, counterState } from "./counterState";
+import {
+  Counter,
+  counterState,
+  increment,
+  decrement,
+  asyncInc,
+} from "./counterState";
 
 describe("Counter State: ", () => {
   let store: MonoStore<{ counter: Counter }>;
@@ -24,7 +30,7 @@ describe("Counter State: ", () => {
     await ajwahTest({
       build: () => store.select((state) => state.counter),
       act: () => {
-        store.dispatch("inc");
+        store.dispatch(increment());
       },
       skip: 1,
       verify: (states) => {
@@ -37,7 +43,7 @@ describe("Counter State: ", () => {
     await ajwahTest({
       build: () => store.select((state) => state.counter),
       act: () => {
-        store.dispatch("dec");
+        store.dispatch(decrement());
       },
       skip: 1,
       verify: (states) => {
@@ -50,7 +56,7 @@ describe("Counter State: ", () => {
     await ajwahTest({
       build: () => store.select((state) => state.counter),
       act: () => {
-        store.dispatch("asyncInc");
+        store.dispatch(asyncInc());
       },
       skip: 1,
       wait: 10,
@@ -86,39 +92,16 @@ describe("Counter State: ", () => {
       },
     });
   });
-  it("action hanler whereType", async () => {
-    await ajwahTest({
-      build: () => store.action$.whereType("awesome"),
-      act: () => {
-        store.dispatch("awesome");
-      },
 
-      verify: (states) => {
-        expect(states[0]).toEqual({ type: "awesome" });
-      },
-    });
-  });
-  it("action hanler whereTypes", async () => {
-    await ajwahTest({
-      build: () => store.action$.whereTypes("awesomeX", "awesome"),
-      act: () => {
-        store.dispatch("awesome");
-      },
-
-      verify: (states) => {
-        expect(states[0]).toEqual({ type: "awesome" });
-      },
-    });
-  });
   it("action hanler where", async () => {
     await ajwahTest({
-      build: () => store.action$.where((action) => action.type === "awesome"),
+      build: () => store.action$.where((action) => action === "awesome"),
       act: () => {
         store.dispatch("awesome");
       },
 
       verify: (states) => {
-        expect(states[0]).toEqual({ type: "awesome" });
+        expect(states[0]).toEqual("awesome");
       },
     });
   });
@@ -127,7 +110,7 @@ describe("Counter State: ", () => {
       build: () => store.select((state) => state.counter),
       act: () => {
         store.dispose();
-        store.dispatch("inc");
+        store.dispatch(increment());
       },
 
       verify: (states) => {
