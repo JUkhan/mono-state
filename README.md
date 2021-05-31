@@ -10,9 +10,7 @@ State Management Lib - reactive and less boilerpllate
 
 ```tsx
 import { RegisterState, createStore, Action } from "mono-state";
-
 import { map, tap, delay } from "rxjs/operators";
-import { RegisterState, Action } from "../src";
 
 export interface Counter {
   count: number;
