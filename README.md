@@ -1,6 +1,8 @@
 # mono-state
 
-State Management Lib - reactive and less boilerpllate
+State Management Lib - reactive and less boilerplate
+
+- version 3,4,5 are same but having variant in coding style
 
 `Angular` [counter](https://stackblitz.com/edit/angular-ms-todo?file=src/app/app.component.ts) | [todos](https://stackblitz.com/edit/angular-ms-todo?file=src/app/app.component.ts)
 
