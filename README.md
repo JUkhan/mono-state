@@ -6,16 +6,29 @@ State Management Lib - reactive and less boilerpllate
 
 `React` [counter](https://stackblitz.com/edit/react-mono-state?file=index.tsx) | [todos](https://stackblitz.com/edit/react-todo-mono?file=index.tsx)
 
-### counterState
+### counterState v0.5.0
 
 ```tsx
-import { RegisterState, createStore, Action } from "mono-state";
-import { map, tap, delay } from "rxjs/operators";
+export const counterState: RegisterState<Counter> = {
+  stateName: "counter",
+  initialState: { loading: false, count: 0 },
+  async mapActionToState(state, action, emit) {
+    if (action instanceof Inctrment)
+      emit({ count: state.count + 1, loading: false });
+    else if (action instanceof Decrement)
+      emit({ count: state.count - 1, loading: false });
+    else if (action instanceof AsyncInc) {
+      emit({ count: state.count, loading: true });
+      await delay();
+      emit((cstate) => ({ count: cstate.count + 1, loading: false }));
+    }
+  },
+};
+```
 
-export interface Counter {
-  count: number;
-  loading: boolean;
-}
+### counterState v0.4.0
+
+```tsx
 export const counterState: RegisterState<Counter> = {
   stateName: "counter",
   initialState: { loading: false, count: 0 },
@@ -37,7 +50,7 @@ export const counterState: RegisterState<Counter> = {
         ),
       actions.isA(AsyncInc).pipe(
         tap((action) => emit(({ count }) => ({ loading: true, count }))),
-        delay(10),
+        delay(),
         map((action) =>
           emit(({ count }) => ({ loading: false, count: count + 1 }))
         )
@@ -45,14 +58,30 @@ export const counterState: RegisterState<Counter> = {
     ];
   },
 };
+```
 
-export class Inctrment extends Action {}
-export class Decrement extends Action {}
-export class AsyncInc extends Action {}
+### counterState v0.3.0
 
-export const increment = () => new Inctrment();
-export const decrement = () => new Decrement();
-export const asyncInc = () => new AsyncInc();
+```tsx
+export const counterState: RegisterState<Counter> = {
+  stateName: "counter",
+  initialState: { loading: false, count: 0 },
+  mapActionToState(emit) {
+    return {
+      inc(state) {
+        emit({ loading: false, count: state.count + 1 });
+      },
+      dec(state) {
+        emit({ loading: false, count: state.count - 1 });
+      },
+      async asyncInc(state) {
+        emit({ loading: true, count: state.count });
+        await delay();
+        emit((c_state) => ({ loading: false, count: c_state.count + 1 }));
+      },
+    };
+  },
+};
 ```
 
 ### Consuming

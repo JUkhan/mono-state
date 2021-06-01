@@ -1,4 +1,3 @@
-import { map, tap, delay } from "rxjs/operators";
 import { RegisterState, Action } from "../src";
 
 export interface Counter {
@@ -8,33 +7,21 @@ export interface Counter {
 export const counterState: RegisterState<Counter> = {
   stateName: "counter",
   initialState: { loading: false, count: 0 },
-  mapActionToState(actions, emit) {
-    return [
-      actions
-        .isA(Inctrment)
-        .pipe(
-          map((action) =>
-            emit(({ count }) => ({ loading: false, count: count + 1 }))
-          )
-        ),
-      actions
-        .isA(Decrement)
-        .pipe(
-          map((action) =>
-            emit(({ count }) => ({ loading: false, count: count - 1 }))
-          )
-        ),
-      actions.isA(AsyncInc).pipe(
-        tap((action) => emit(({ count }) => ({ loading: true, count }))),
-        delay(10),
-        map((action) =>
-          emit(({ count }) => ({ loading: false, count: count + 1 }))
-        )
-      ),
-    ];
+  async mapActionToState(state, action, emit) {
+    if (action instanceof Inctrment)
+      emit({ count: state.count + 1, loading: false });
+    else if (action instanceof Decrement)
+      emit({ count: state.count - 1, loading: false });
+    else if (action instanceof AsyncInc) {
+      emit({ count: state.count, loading: true });
+      await delay();
+      emit((cstate) => ({ count: cstate.count + 1, loading: false }));
+    }
   },
 };
-
+function delay(ms: number = 10) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 export class Inctrment extends Action {}
 export class Decrement extends Action {}
 export class AsyncInc extends Action {}

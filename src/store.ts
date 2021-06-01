@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Subscription, merge } from "rxjs";
+import { BehaviorSubject, Observable, Subscription } from "rxjs";
 import { distinctUntilChanged, map } from "rxjs/operators";
 
 import { Action } from "./action";
@@ -8,11 +8,11 @@ export interface RegisterState<M = any, S = any> {
   stateName: string;
   initialState: M;
   mapActionToState: (
-    action$: Actions,
+    state: M,
+    action: Action,
     emit: (state: M | ((state: M) => M)) => M,
-    select: () => S,
-    dispatch: (action: string | symbol | Action) => void
-  ) => Observable<any>[];
+    mono: MonoStore
+  ) => void;
 }
 
 export class MonoStore<S = any> {
@@ -57,15 +57,12 @@ export class MonoStore<S = any> {
       }
       return state;
     };
-    const reducerActions = mapActionToState(
-      this.action$,
-      emitState,
-      () => this._store.value,
-      this.dispatch
-    );
+
     this._stateSubscriptions.set(
       stateName,
-      merge(...reducerActions).subscribe()
+      this._dispatcher.subscribe((action) =>
+        mapActionToState(this._store.value[stateName], action, emitState, this)
+      )
     );
   }
   unregisterState(stateName: string) {
