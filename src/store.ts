@@ -44,7 +44,6 @@ export class MonoStore<S = any> {
     this._store.next(
       Object.assign({}, this._store.value, { [stateName]: initialState })
     );
-    this.dispatch({ type: `registerState(${stateName})` });
 
     const emitState = (state: any) => {
       if (typeof state === "function") {
@@ -67,6 +66,7 @@ export class MonoStore<S = any> {
       stateName,
       merge(...reducerActions).subscribe()
     );
+    this.dispatch(`@registerState(${stateName})`);
   }
   unregisterState(stateName: string) {
     if (this._store.value[stateName]) {
@@ -75,7 +75,7 @@ export class MonoStore<S = any> {
       const state: any = this.getState();
       delete state[stateName];
       setTimeout(() => {
-        this.dispatch(`unregisterState(${stateName})`);
+        this.dispatch(`@unregisterState(${stateName})`);
         this._store.next(Object.assign({}, state));
       }, 0);
     }
