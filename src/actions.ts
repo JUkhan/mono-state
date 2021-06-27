@@ -5,7 +5,7 @@ import { Action } from "./action";
 export class Actions {
   constructor(private _dispatcher: BehaviorSubject<Action>) {}
 
-  isA<T extends Action>(actionOf: new () => T) {
+  isA<T extends Action>(actionOf: (new () => T) | (new (...args: any[]) => T)) {
     return this._dispatcher.pipe(
       filter((action) => action instanceof actionOf),
       map((action) => action as T)

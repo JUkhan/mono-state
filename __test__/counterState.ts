@@ -22,9 +22,9 @@ export const counterState: RegisterState<Counter> = {
 function delay(ms: number = 10) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-export class Inctrment extends Action {}
-export class Decrement extends Action {}
-export class AsyncInc extends Action {}
+export class Inctrment {}
+export class Decrement {}
+export class AsyncInc {}
 
 export const increment = () => new Inctrment();
 export const decrement = () => new Decrement();

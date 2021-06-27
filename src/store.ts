@@ -44,7 +44,6 @@ export class MonoStore<S = any> {
     this._store.next(
       Object.assign({}, this._store.value, { [stateName]: initialState })
     );
-    this.dispatch({ type: `registerState(${stateName})` });
 
     const emitState = (state: any) => {
       if (typeof state === "function") {
@@ -64,6 +63,7 @@ export class MonoStore<S = any> {
         mapActionToState(this._store.value[stateName], action, emitState, this)
       )
     );
+    this.dispatch({ type: `registerState(${stateName})` });
   }
   unregisterState(stateName: string) {
     if (this._store.value[stateName]) {

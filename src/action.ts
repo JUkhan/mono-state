@@ -1,1 +1,1 @@
-export class Action {}
+export interface Action {}
