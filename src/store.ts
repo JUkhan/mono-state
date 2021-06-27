@@ -63,7 +63,7 @@ export class MonoStore<S = any> {
         mapActionToState(this._store.value[stateName], action, emitState, this)
       )
     );
-    this.dispatch({ type: `registerState(${stateName})` });
+    this.dispatch(`@registerState(${stateName})`);
   }
   unregisterState(stateName: string) {
     if (this._store.value[stateName]) {
@@ -72,7 +72,7 @@ export class MonoStore<S = any> {
       const state: any = this.getState();
       delete state[stateName];
       setTimeout(() => {
-        this.dispatch(`unregisterState(${stateName})`);
+        this.dispatch(`@unregisterState(${stateName})`);
         this._store.next(Object.assign({}, state));
       }, 0);
     }
