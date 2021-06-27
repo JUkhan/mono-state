@@ -8,7 +8,7 @@ State Management Lib - reactive and less boilerplate
 
 `React` [counter](https://stackblitz.com/edit/react-mono-state?file=index.tsx) | [todos](https://stackblitz.com/edit/react-todo-mono?file=index.tsx)
 
-### counterState v0.5.0
+### counterState v0.5.\*
 
 ```tsx
 export const counterState: RegisterState<Counter> = {
@@ -28,7 +28,7 @@ export const counterState: RegisterState<Counter> = {
 };
 ```
 
-### counterState v0.4.0
+### counterState v0.4.\*
 
 ```tsx
 export const counterState: RegisterState<Counter> = {

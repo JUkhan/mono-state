@@ -35,9 +35,9 @@ export const counterState: RegisterState<Counter> = {
   },
 };
 
-export class Inctrment extends Action {}
-export class Decrement extends Action {}
-export class AsyncInc extends Action {}
+export class Inctrment {}
+export class Decrement {}
+export class AsyncInc {}
 
 export const increment = () => new Inctrment();
 export const decrement = () => new Decrement();
